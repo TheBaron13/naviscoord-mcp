@@ -33,7 +33,7 @@ Then add proof:
 - root-cause and hotspot detection;
 - explicit dry-run, document targeting and post-write re-reads;
 - local-only bridge and auditable PDF/CSV outputs;
-- Navisworks Manage 2024–2026.
+- Navisworks Manage 2024–2027.
 
 Avoid leading with tool counts, “agents”, generic artificial intelligence or
 the protocol acronym. Those describe implementation, not why a coordinator

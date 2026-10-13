@@ -5,6 +5,22 @@ Este proyecto sigue [SemVer](https://semver.org/lang/es/).
 
 ## [Unreleased]
 
+- **Soporte para Navisworks Manage 2027 (API v24).** v24 quitó
+  `DocumentClashTests.Tests` y los overloads de un solo argumento de
+  `TestsAddCopy`/`TestsRemove` — confirmado compilando el complemento contra
+  el SDK real de 2027. Los 24 sitios que leían `.Tests` ahora pasan por
+  `TestsData.Value.TestsRoot.Children`, y los tres que llamaban a
+  `TestsAddCopy`/`TestsRemove` con un solo argumento pasan explícitamente el
+  `GroupItem` padre — formas presentes desde v21, así que una misma fuente
+  sigue compilando contra 2024, 2025, 2026 y 2027. `install.ps1`,
+  `Install-NavisCoord.ps1`, `Build-Release.ps1` y `scripts/FindNavisworks.ps1`
+  reconocen ahora 2027; verificado compilando contra las instalaciones reales
+  de 2025 y 2027 (sin regresión en 2025) y corriendo `NavisCoord.Tests`
+  (1947 comprobaciones). No se compiló contra 2026 real por no haber esa
+  instalación disponible en esta máquina; los cambios usan la misma forma de
+  API confirmada en 2025 y 2027, que el proyecto ya trataba como idéntica en
+  las tres versiones.
+
 ## [1.1.1] — 2026-10-01
 
 - **Los ZIP del complemento traen la cinta.** `Build-Release.ps1` empaquetaba

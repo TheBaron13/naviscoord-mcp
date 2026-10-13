@@ -13,7 +13,7 @@ name: CI
 # view purity, the mutation envelope, the job state machine, the path policy,
 # the profile schema, the session store and capabilities.
 #
-# Building the real add-in for 2024/2025/2026 is a manual step before a
+# Building the real add-in for 2024/2025/2026/2027 is a manual step before a
 # release; see docs/RELEASING.md.
 
 # A release tag used to trigger nothing at all. The suite carries the one rule

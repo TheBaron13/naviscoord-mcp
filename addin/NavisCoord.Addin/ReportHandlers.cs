@@ -316,7 +316,7 @@ namespace NavisCoord
         private static ClashResult FindResult(Document doc, string guid)
         {
             var clash = doc.GetClash();
-            foreach (var saved in clash.TestsData.Tests)
+            foreach (var saved in clash.TestsData.Value.TestsRoot.Children)
             {
                 if (!(saved is ClashTest test)) continue;
                 var found = Router.EnumerateResults(test).FirstOrDefault(

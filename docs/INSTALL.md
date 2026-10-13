@@ -1,6 +1,6 @@
 # Install NavisCoord in your desktop AI client
 
-The live product has two components: the native Navisworks add-in and the MCP runtime. The release runtime includes Python and its dependencies. It needs no API key. Windows and a licensed Navisworks **Manage** 2024, 2025 or 2026 are required.
+The live product has two components: the native Navisworks add-in and the MCP runtime. The release runtime includes Python and its dependencies. It needs no API key. Windows and a licensed Navisworks **Manage** 2024, 2025, 2026 or 2027 are required.
 
 ## 1. Install the Navisworks add-in
 

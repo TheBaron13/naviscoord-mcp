@@ -105,7 +105,7 @@ namespace NavisCoord
                 var planned = new MutationResult(operation) { DryRun = true,
                     FingerprintBefore = fingerprint, FingerprintAfter = fingerprint };
                 var preview = planned.ToJson();
-                preview["tests"] = doc.GetClash().TestsData.Tests.OfType<Autodesk.Navisworks.Api.Clash.ClashTest>()
+                preview["tests"] = doc.GetClash().TestsData.Value.TestsRoot.Children.OfType<Autodesk.Navisworks.Api.Clash.ClashTest>()
                     .Select(t => new Dictionary<string, object> { ["name"] = t.DisplayName, ["guid"] = t.Guid.ToString() }).ToList();
                 preview["planned_scope"] = operation == "workflow/configure" ? "Create or reconcile sets and clash matrix from the active profile" :
                     operation == "workflow/run" ? "Run every test listed; results are unknown until execution" :

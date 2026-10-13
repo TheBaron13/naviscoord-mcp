@@ -40,7 +40,7 @@ El motor exige evidencia para descartar contactos por diseño. No elimina un cru
 2. Instala el paquete de tu cliente siguiendo [estas instrucciones](docs/INSTALL.md).
 3. Abre la federación en Navisworks Manage y pide: **«Comprueba NavisCoord e identifica el documento activo antes de analizarlo»**.
 
-El complemento funciona en Windows con **Navisworks Manage 2024, 2025 o 2026**. El motor también analiza exportaciones guardadas. Puedes adaptar disciplinas, tolerancias y criterios mediante el [perfil de ejemplo](profiles/example-profile.json).
+El complemento funciona en Windows con **Navisworks Manage 2024, 2025, 2026 o 2027**. El motor también analiza exportaciones guardadas. Puedes adaptar disciplinas, tolerancias y criterios mediante el [perfil de ejemplo](profiles/example-profile.json).
 
 ## Verificación y privacidad
 

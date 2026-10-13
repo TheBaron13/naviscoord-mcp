@@ -11,7 +11,7 @@
 [![CI](https://github.com/HorizunGroup/naviscoord-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/HorizunGroup/naviscoord-mcp/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/HorizunGroup/naviscoord-mcp)](https://github.com/HorizunGroup/naviscoord-mcp/releases/latest)
 [![MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
-[![Navisworks](https://img.shields.io/badge/Navisworks%20Manage-2024–2026-0696d7)](docs/INSTALL.md)
+[![Navisworks](https://img.shields.io/badge/Navisworks%20Manage-2024–2027-0696d7)](docs/INSTALL.md)
 
 [**Get started**](docs/INSTALL.md) · [Release evidence](docs/RELEASE-1.0-VERIFICATION.md) · [Report a problem](https://github.com/HorizunGroup/naviscoord-mcp/issues)
 
@@ -54,7 +54,7 @@ All four connect to the local workstation. ChatGPT Desktop uses a local plugin; 
 2. **Your AI client:** install the desktop package or `.mcpb` from [Releases](https://github.com/HorizunGroup/naviscoord-mcp/releases/latest). Follow the [client-specific instructions](docs/INSTALL.md).
 3. Open Navisworks Manage, load your federation and ask: **“Check NavisCoord, identify the active document and analyze its clashes.”**
 
-Windows and a licensed **Autodesk Navisworks Manage 2024, 2025 or 2026** are required for live coordination. The standalone analysis engine can also process saved exports without Navisworks.
+Windows and a licensed **Autodesk Navisworks Manage 2024, 2025, 2026 or 2027** are required for live coordination. The standalone analysis engine can also process saved exports without Navisworks.
 
 ## Built to make the evidence inspectable
 

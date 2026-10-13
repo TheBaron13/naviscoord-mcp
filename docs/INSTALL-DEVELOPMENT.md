@@ -12,7 +12,7 @@ confundirlas.
 
 - **Python 3.10 o superior.** Es el suelo real: el código usa uniones PEP 604
   (`X | None`) en anotaciones evaluadas en runtime, y 3.9 lanza.
-- **Autodesk Navisworks Manage 2024, 2025 o 2026**, con licencia. El
+- **Autodesk Navisworks Manage 2024, 2025, 2026 o 2027**, con licencia. El
   complemento compila contra el API de la instalación local; no se
   redistribuye ningún ensamblado de Autodesk.
 - **.NET SDK 8 o superior** solo si vas a compilar el complemento tú. Los
@@ -49,7 +49,7 @@ carpeta donde quedó guardado:
 powershell -ExecutionPolicy Bypass -File .\Install-NavisCoord.ps1
 ```
 
-El instalador detecta Navisworks Manage 2024–2026, descarga el ZIP de la
+El instalador detecta Navisworks Manage 2024–2027, descarga el ZIP de la
 [última versión publicada](https://github.com/HorizunGroup/naviscoord-mcp/releases/latest),
 verifica su SHA-256, rechaza rutas inesperadas y publica los archivos con
 rollback. Se niega a continuar si Navisworks está abierto.
@@ -68,7 +68,7 @@ Navisworks local. Desde la raíz del repositorio:
 .\install.ps1
 ```
 
-Detecta cada Navisworks Manage 2024–2026 instalado, compila el complemento
+Detecta cada Navisworks Manage 2024–2027 instalado, compila el complemento
 contra el API de **cada uno** —cada versión trae su propio ensamblado, un DLL
 no sirve para todas— e instala por versión verificando cada copia.
 

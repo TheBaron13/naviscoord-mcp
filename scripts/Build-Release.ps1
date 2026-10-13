@@ -27,8 +27,8 @@
     a un release es una decisión humana, y está en docs\RELEASING.md.
 
 .PARAMETER Version
-    2024, 2025, 2026 o 'all' (por defecto). Solo se procesan las versiones
-    realmente instaladas.
+    2024, 2025, 2026, 2027 o 'all' (por defecto). Solo se procesan las
+    versiones realmente instaladas.
 
 .PARAMETER SkipBuild
     Rearma el empaquetado con lo ya compilado.
@@ -57,7 +57,7 @@
 #>
 [CmdletBinding(SupportsShouldProcess = $true)]
 param(
-    [ValidateSet('2024', '2025', '2026', 'all')]
+    [ValidateSet('2024', '2025', '2026', '2027', 'all')]
     [string]$Version = 'all',
     [switch]$SkipBuild,
     [switch]$NoZip,
@@ -263,7 +263,7 @@ if ($VerifyReproducible) {
     # dentro no significa nada: querria decir que el empaquetado normalizo lo
     # que el compilador no, y el binario que se instala seguiria variando.
     # Comparar el contenedor antes que el contenido esconde exactamente eso.
-    foreach ($v in @('2024', '2025', '2026')) {
+    foreach ($v in @('2024', '2025', '2026', '2027')) {
         $da = Join-Path $rootA "$v\NavisCoord.dll"; $db = Join-Path $rootB "$v\NavisCoord.dll"
         if ((Test-Path $da) -and (Test-Path $db)) {
             $ha = (Get-FileHash $da -Algorithm SHA256).Hash; $hb = (Get-FileHash $db -Algorithm SHA256).Hash
@@ -434,7 +434,7 @@ if ($Ref) {
 
 # --------------------------------------------------------------- detección
 
-$wanted = if ($Version -eq 'all') { @('2024', '2025', '2026') } else { @($Version) }
+$wanted = if ($Version -eq 'all') { @('2024', '2025', '2026', '2027') } else { @($Version) }
 $found = @()
 # La deteccion vive en FindNavisworks.ps1 (registro de Autodesk primero,
 # despues las rutas convencionales en TODAS las unidades fijas), con su
@@ -453,7 +453,7 @@ foreach ($v in $wanted) {
     }
 }
 if (-not $found) {
-    throw "No encuentro ninguna instalacion de Navisworks Manage 2024-2026. El add-in se compila contra el API de cada version instalada."
+    throw "No encuentro ninguna instalacion de Navisworks Manage 2024-2027. El add-in se compila contra el API de cada version instalada."
 }
 
 foreach ($name in $legal) {

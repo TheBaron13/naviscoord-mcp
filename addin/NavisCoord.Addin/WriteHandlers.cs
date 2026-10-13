@@ -1270,7 +1270,7 @@ namespace NavisCoord
 
             foreach (var group in pairsByTest)
             {
-                var test = clash.TestsData.Tests
+                var test = clash.TestsData.Value.TestsRoot.Children
                     .OfType<ClashTest>()
                     .FirstOrDefault(t => string.Equals(t.DisplayName, group.Key, StringComparison.OrdinalIgnoreCase));
                 if (test == null)
@@ -1374,7 +1374,7 @@ namespace NavisCoord
                 var verify = new Dictionary<string, object>();
                 foreach (var pair in editedByTest)
                 {
-                    var test = clash.TestsData.Tests
+                    var test = clash.TestsData.Value.TestsRoot.Children
                         .OfType<ClashTest>()
                         .FirstOrDefault(t => string.Equals(t.DisplayName, pair.Key, StringComparison.OrdinalIgnoreCase));
                     if (test == null) continue;
@@ -1494,7 +1494,7 @@ namespace NavisCoord
             if (pairs.Count == 0) throw new ArgumentException("Se requiere 'pairs' con al menos un par de disciplinas.");
 
             var clash = doc.GetClash();
-            var existing = clash.TestsData.Tests
+            var existing = clash.TestsData.Value.TestsRoot.Children
                 .Select(t => t.DisplayName ?? string.Empty)
                 .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
@@ -1579,10 +1579,10 @@ namespace NavisCoord
 
                 if (replace)
                 {
-                    var duplicate = clash.TestsData.Tests
+                    var duplicate = clash.TestsData.Value.TestsRoot.Children
                         .OfType<ClashTest>()
                         .FirstOrDefault(t => string.Equals(t.DisplayName, spec.Name, StringComparison.OrdinalIgnoreCase));
-                    if (duplicate != null) clash.TestsData.TestsRemove(duplicate);
+                    if (duplicate != null) clash.TestsData.TestsRemove(duplicate.Parent, duplicate);
                 }
 
                 var test = new ClashTest
@@ -1600,7 +1600,7 @@ namespace NavisCoord
                 // A selection source resolves at run time and works for both.
                 test.SelectionA.Selection.CopyFrom(SourcesFor(doc, spec.SetsA));
                 test.SelectionB.Selection.CopyFrom(SourcesFor(doc, spec.SetsB));
-                clash.TestsData.TestsAddCopy(test);
+                clash.TestsData.TestsAddCopy(clash.TestsData.Value.TestsRoot, test);
                 created++;
             }
 
@@ -1614,7 +1614,7 @@ namespace NavisCoord
             foreach (var spec in toCreate)
             {
                 if (spec.SetsA.Count == 0 || spec.SetsB.Count == 0) continue;
-                var live = doc.GetClash().TestsData.Tests
+                var live = doc.GetClash().TestsData.Value.TestsRoot.Children
                     .OfType<ClashTest>()
                     .FirstOrDefault(t => string.Equals(t.DisplayName, spec.Name,
                         StringComparison.OrdinalIgnoreCase));
@@ -1678,7 +1678,7 @@ namespace NavisCoord
 
             // Snapshot names only. Any object captured here would be dead by
             // the second iteration.
-            var names = doc.GetClash().TestsData.Tests
+            var names = doc.GetClash().TestsData.Value.TestsRoot.Children
                 .OfType<ClashTest>()
                 .Select(t => t.DisplayName ?? string.Empty)
                 .Where(n => requested.Count == 0 || requested.Contains(n))
@@ -1729,7 +1729,7 @@ namespace NavisCoord
         }
 
         private static ClashTest FindTest(Document doc, string name)
-            => doc.GetClash().TestsData.Tests
+            => doc.GetClash().TestsData.Value.TestsRoot.Children
                 .OfType<ClashTest>()
                 .FirstOrDefault(t => string.Equals(t.DisplayName, name, StringComparison.OrdinalIgnoreCase));
 
@@ -2364,7 +2364,7 @@ namespace NavisCoord
         private static Dictionary<string, string> BuildOwnerIndex(DocumentClash clash)
         {
             var owners = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            foreach (var saved in clash.TestsData.Tests)
+            foreach (var saved in clash.TestsData.Value.TestsRoot.Children)
             {
                 if (!(saved is ClashTest test)) continue;
                 var name = test.DisplayName ?? string.Empty;
@@ -2408,7 +2408,7 @@ namespace NavisCoord
         internal static List<ConfigurePlanning.TestSnapshot> SnapshotTests(Document doc)
         {
             var snapshot = new List<ConfigurePlanning.TestSnapshot>();
-            foreach (var saved in doc.GetClash().TestsData.Tests)
+            foreach (var saved in doc.GetClash().TestsData.Value.TestsRoot.Children)
             {
                 if (!(saved is ClashTest test)) continue;
                 var entry = new ConfigurePlanning.TestSnapshot
@@ -2677,7 +2677,7 @@ namespace NavisCoord
         private static Dictionary<string, ResultEntry> BuildResultIndex(DocumentClash clash)
         {
             var index = new Dictionary<string, ResultEntry>(StringComparer.OrdinalIgnoreCase);
-            foreach (var saved in clash.TestsData.Tests)
+            foreach (var saved in clash.TestsData.Value.TestsRoot.Children)
             {
                 if (!(saved is ClashTest test)) continue;
                 foreach (var result in Router.EnumerateResults(test))

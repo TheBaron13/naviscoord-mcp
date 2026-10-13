@@ -5,7 +5,7 @@ description: Instalar, actualizar, reparar y verificar NavisCoord en ChatGPT Wor
 
 # Instalar y verificar NavisCoord
 
-NavisCoord conecta un runtime MCP local con un complemento de Navisworks Manage 2024–2026. El runtime distribuido incluye Python y sus dependencias. No requiere instalar Python, una cuenta de OpenAI Platform, una API key ni un túnel para Work de escritorio.
+NavisCoord conecta un runtime MCP local con un complemento de Navisworks Manage 2024–2027. El runtime distribuido incluye Python y sus dependencias. No requiere instalar Python, una cuenta de OpenAI Platform, una API key ni un túnel para Work de escritorio.
 
 ## Diagnóstico
 
