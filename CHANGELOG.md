@@ -5,6 +5,61 @@ Este proyecto sigue [SemVer](https://semver.org/lang/es/).
 
 ## [Unreleased]
 
+- **CI: el job "mínimos declarados" rompía por un pydantic que nadie fijó
+  (confirmado 2026-10-22).** El job instala `-e ".[dev]"` primero (que resuelve
+  la versión de pydantic MÁS NUEVA que exista, al no ser dependencia directa
+  de naviscoord) y luego fija `mcp`/`reportlab`/`pillow` a sus suelos
+  declarados — pero nunca tocaba pydantic. El 2026-10-20 ese "más nuevo" era
+  compatible; el 2026-10-22, pydantic 2.14.1 quitó
+  `pydantic._internal._typing_extra.eval_type_backport`, un símbolo privado
+  del que depende el `fastmcp` vendorizado en mcp 1.14.x, y el job pasó a
+  romper con `ImportError` en la recolección de pruebas — sin que nadie
+  hubiera tocado código de este repo. `mcp==1.14.1` declara
+  `pydantic>=2.11.0,<3.0.0`, un techo que nunca fue cierto en la práctica.
+  Arreglo: fijar también `pydantic==2.11.0` (el propio suelo que mcp 1.14
+  declara) en ese paso — verificado reproduciendo la instalación exacta en
+  local (Python 3.12) y corriendo la suite completa contra ella: 1009
+  pasaron, 0 fallaron.
+
+- **Siete rutas nuevas: abrir/anexar un modelo, cámara explícita, aplicar un
+  punto de vista guardado y visibilidad genérica (60 herramientas en
+  total).** Surgieron de comparar este servidor contra otros dos MCP de
+  Navisworks de terceros (uno sin licencia declarada, uno MIT) — la mayoría
+  de lo que ofrecían ya existía aquí en una forma más rigurosa, pero cuatro
+  huecos eran reales:
+  - `navis_open_file` / `navis_append_file` (`document/open`,
+    `document/append`): hasta ahora todo el servidor asumía que alguien ya
+    había abierto algo en Navisworks a mano. Abrir sigue la misma disciplina
+    de `disposition` que `navis_close_document` — nunca descarta cambios sin
+    guardar por omisión. Anexar usa el registro de idempotencia porque un
+    reintento ciego dejaría el modelo duplicado en la federación, a
+    diferencia de la mayoría de las mutaciones de este complemento.
+  - `navis_set_camera` (`view/set_camera`): la cámara explícita ya existía
+    dentro de `navis_clash_image`/`navis_pdf_report`, pero encerrada ahí; no
+    había forma de moverla y dejarla.
+  - `navis_list_viewpoints` / `navis_apply_viewpoint` (`viewpoints/list`,
+    `viewpoints/apply`): `navis_save_viewpoints` solo escribía. El nombre no
+    es único entre carpetas, así que aplicar por nombre se niega si hay más
+    de una coincidencia — usa el guid de `navis_list_viewpoints`.
+  - `navis_set_visibility` / `navis_isolate` (`visibility/set`,
+    `visibility/isolate`): ocultar/mostrar/aislar elementos, independiente
+    de la coordinación. Deliberadamente **sin** un botón "mostrar todo": esa
+    sería la misma trampa que `navis_reset_appearance` ya corrigió para los
+    colores (un reset ciego borraría también lo que el coordinador hubiera
+    ocultado a mano). `navis_isolate` devuelve `hidden_path_ids`
+    precisamente para que mostrar de nuevo sea explícito.
+
+  Las dos rutas de terceros explícitamente NO adoptadas: la captura de
+  pantalla por `win32gui` de uno (peor que el render verificado en motor que
+  ya tiene este servidor) y la ejecución de C# en vivo contra el Document
+  del otro (contradice el diseño entero de este complemento: toda mutación
+  aquí pasa por `dry_run`, huella del documento y clave de idempotencia; un
+  escape hatch que corre código arbitrario los salta todos).
+
+  `Install-NavisCoord.ps1` y `Build-Release.ps1` no se tocaron — las rutas
+  nuevas viven en el mismo DLL que ya instalan, así que no había nada que
+  cambiar en el empaquetado para que lleguen con el próximo release.
+
 - **Soporte para Navisworks Manage 2027 (API v24).** v24 quitó
   `DocumentClashTests.Tests` y los overloads de un solo argumento de
   `TestsAddCopy`/`TestsRemove` — confirmado compilando el complemento contra

@@ -306,7 +306,8 @@ class Bridge:
         write_routes = derived_routes | {"sets/build", "sets/build_search", "clash/matrix", "clash/run",
             "clash/apply_rules", "appearance/reset", "workflow/configure", "workflow/run",
             "workflow/group_levels", "workflow/rules", "document/save", "document/save_as",
-            "document/close", "application/exit"}
+            "document/close", "application/exit", "visibility/set", "visibility/isolate",
+            "viewpoints/apply", "view/set_camera", "document/open", "document/append"}
         operation = body_payload.get("route", "") if route == "job/submit" else route
         read_jobs = {"workflow/audit_models", "clash/export"}
         writes = mutating or operation in write_routes or (route == "job/submit" and operation not in read_jobs)
@@ -528,6 +529,111 @@ class Bridge:
                 **kwargs,
             },
         )
+
+    def open_file(
+        self,
+        path: str,
+        *,
+        disposition: str = "",
+        expected_fingerprint: str = "",
+        dry_run: bool = True,
+        run_async: bool = False,
+    ) -> dict[str, Any]:
+        self.require("document/open", since="1.2.0")
+        payload: dict[str, Any] = {"path": path, "dry_run": dry_run}
+        if disposition:
+            payload["disposition"] = disposition
+        if expected_fingerprint:
+            payload["expected_document_fingerprint"] = expected_fingerprint
+        if run_async:
+            return self.submit_job("document/open", payload)
+        return self.call("document/open", payload)
+
+    def append_file(
+        self,
+        path: str,
+        *,
+        expected_fingerprint: str,
+        dry_run: bool = True,
+        idempotency_key: str = "",
+        run_async: bool = False,
+    ) -> dict[str, Any]:
+        self.require("document/append", since="1.2.0")
+        payload = _guarded({"path": path, "dry_run": dry_run}, expected_fingerprint, idempotency_key)
+        if run_async:
+            return self.submit_job("document/append", payload)
+        return self.call("document/append", payload)
+
+    # --------------------------------------------------------- visibility
+
+    def set_visibility(
+        self,
+        path_ids: list[str],
+        hidden: bool,
+        *,
+        expected_fingerprint: str = "",
+        dry_run: bool = True,
+    ) -> dict[str, Any]:
+        self.require("visibility/set", since="1.2.0")
+        payload = _guarded({"path_ids": path_ids, "hidden": hidden, "dry_run": dry_run}, expected_fingerprint, "")
+        return self.call("visibility/set", payload)
+
+    def isolate(
+        self,
+        path_ids: list[str],
+        *,
+        expected_fingerprint: str = "",
+        dry_run: bool = True,
+    ) -> dict[str, Any]:
+        self.require("visibility/isolate", since="1.2.0")
+        payload = _guarded({"path_ids": path_ids, "dry_run": dry_run}, expected_fingerprint, "")
+        return self.call("visibility/isolate", payload)
+
+    # --------------------------------------------------------- viewpoints
+
+    def list_viewpoints(self) -> dict[str, Any]:
+        self.require("viewpoints/list", since="1.2.0")
+        return self.call("viewpoints/list")
+
+    def apply_viewpoint(
+        self,
+        *,
+        guid: str = "",
+        name: str = "",
+        expected_fingerprint: str = "",
+        dry_run: bool = True,
+    ) -> dict[str, Any]:
+        self.require("viewpoints/apply", since="1.2.0")
+        payload = _guarded({"guid": guid, "name": name, "dry_run": dry_run}, expected_fingerprint, "")
+        return self.call("viewpoints/apply", payload)
+
+    # -------------------------------------------------------------- camera
+
+    def set_camera(
+        self,
+        position: list[float],
+        look_at: list[float],
+        *,
+        up: list[float] | None = None,
+        projection: str = "perspective",
+        render_style: str = "",
+        expected_fingerprint: str = "",
+        dry_run: bool = True,
+    ) -> dict[str, Any]:
+        self.require("view/set_camera", since="1.2.0")
+        payload = _guarded(
+            {
+                "position": position,
+                "look_at": look_at,
+                "up": up or [],
+                "projection": projection,
+                "render_style": render_style,
+                "dry_run": dry_run,
+            },
+            expected_fingerprint,
+            "",
+        )
+        return self.call("view/set_camera", payload)
 
     def exit_application(
         self,

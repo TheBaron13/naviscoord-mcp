@@ -280,6 +280,15 @@ namespace NavisCoord
         /// <summary>Saved viewpoints re-enumerated from the document.</summary>
         public const string SavedViewpointReread = "saved_viewpoint_reread";
 
+        /// <summary>ModelItem hidden state re-read via Models.IsHidden.</summary>
+        public const string VisibilityStateReread = "visibility_state_reread";
+
+        /// <summary>The live viewpoint's own position/target re-read after applying one.</summary>
+        public const string ViewpointReread = "viewpoint_reread";
+
+        /// <summary>The document re-opened/re-appended, re-read for title and model count.</summary>
+        public const string DocumentLoadReread = "document_load_reread";
+
         /// <summary>The file on disk plus the document's own state.</summary>
         public const string FilesystemAndDocumentReread = "filesystem_and_document_reread";
 
@@ -307,7 +316,8 @@ namespace NavisCoord
             DocumentReread, SavedItemReread, ClashTestStatusReread, ResultStatusReread,
             GroupMembershipReread, SelectionSourceReread, CurrentSelectionReread,
             AppearanceOverrideReread, SavedViewpointReread, FilesystemAndDocumentReread,
-            DocumentClosedReread, ProcessExit, None, NotApplicable
+            DocumentClosedReread, ProcessExit, None, NotApplicable,
+            VisibilityStateReread, ViewpointReread, DocumentLoadReread
         };
 
         public static bool IsKnown(string source)

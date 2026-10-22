@@ -73,6 +73,11 @@ EXPECTED_TOOLS = {
     "navis_color_by_priority",
     "navis_reset_appearance",
     "navis_select_issue",
+    "navis_set_visibility",
+    "navis_isolate",
+    "navis_list_viewpoints",
+    "navis_apply_viewpoint",
+    "navis_set_camera",
     # jobs
     "navis_job_status",
     "navis_jobs",
@@ -82,6 +87,8 @@ EXPECTED_TOOLS = {
     "navis_save_as",
     "navis_close_document",
     "navis_exit",
+    "navis_open_file",
+    "navis_append_file",
     # ecosystem
     "navis_handoff",
     "navis_save_export",

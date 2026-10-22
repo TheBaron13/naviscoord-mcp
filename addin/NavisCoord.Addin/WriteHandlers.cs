@@ -111,7 +111,7 @@ namespace NavisCoord
         /// On any of those it returns an <c>invalid_mutation_result</c>
         /// envelope rather than a tidier version of the handler's claim.
         /// </remarks>
-        private static Dictionary<string, object> Sealed(
+        internal static Dictionary<string, object> Sealed(
             string route,
             Dictionary<string, object> payload,
             Dictionary<string, object> body,

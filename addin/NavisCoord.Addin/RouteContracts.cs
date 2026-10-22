@@ -226,6 +226,10 @@ namespace NavisCoord
             // Audit only measures; it changes nothing.
             Read(table, "workflow/audit_models", ReadClass.NeedsUiThread);
 
+            // Walks the saved-viewpoints tree, not the model tree a clash run
+            // rebuilds, but it still needs the UI thread to reach the document.
+            Read(table, "viewpoints/list", ReadClass.NeedsUiThread);
+
             // ---------------------------------------------------- mutations
             Mutation(table, "sets/build", VerificationSources.DocumentReread, job: true, dryRun: true);
             Mutation(table, "sets/build_search", VerificationSources.SavedItemReread, job: true, dryRun: true);
@@ -256,6 +260,25 @@ namespace NavisCoord
             Mutation(table, "document/save", VerificationSources.FilesystemAndDocumentReread, job: true, idempotency: false);
             Mutation(table, "document/save_as", VerificationSources.FilesystemAndDocumentReread, job: true, idempotency: false);
 
+            // The current selection dies with the session, and so do these:
+            // hiding an element, isolating a view and moving the camera are
+            // none of them written to the saved file unless the user also
+            // saves a viewpoint that captures them.
+            Mutation(table, "visibility/set", VerificationSources.VisibilityStateReread,
+                persistent: false, dryRun: true);
+            Mutation(table, "visibility/isolate", VerificationSources.VisibilityStateReread,
+                persistent: false, dryRun: true);
+            Mutation(table, "viewpoints/apply", VerificationSources.ViewpointReread,
+                persistent: false, dryRun: true);
+            Mutation(table, "view/set_camera", VerificationSources.ViewpointReread,
+                persistent: false, dryRun: true);
+
+            // Appending lands in Models.Count, which is exactly what gets
+            // written if the document is saved afterward — persistent like
+            // document/save, and idempotency matters here in a way it does
+            // not for a camera move: a retried append is a duplicated model.
+            Mutation(table, "document/append", VerificationSources.DocumentLoadReread, job: true, dryRun: true);
+
             // ------------------------------------------- host-level actions
             //
             // Closing a document and exiting the application are not document
@@ -274,6 +297,25 @@ namespace NavisCoord
                 RequiresIdempotency = false,
                 Reads = ReadClass.NotARead,
                 VerificationSource = VerificationSources.DocumentClosedReread
+            };
+            // Opening replaces whatever is loaded, including nothing at all —
+            // so unlike every other mutation, a document is not guaranteed to
+            // exist going in, and the fingerprint is only meaningful when one
+            // does. OpenFileHandlers enforces that conditionally itself;
+            // this contract only has to say the route is not a plain read.
+            table["document/open"] = new RouteContract
+            {
+                Name = "document/open",
+                IsMutation = true,
+                Persistent = true,
+                SupportsJob = true,
+                RequiresDocument = false,
+                RequiresFingerprint = false,
+                RequiresEnvelope = true,
+                SupportsDryRun = true,
+                RequiresIdempotency = false,
+                Reads = ReadClass.NotARead,
+                VerificationSource = VerificationSources.DocumentLoadReread
             };
             table["application/exit"] = new RouteContract
             {
