@@ -64,7 +64,14 @@ namespace NavisCoord
                 ["document/save"] = SaveHandlers.Save,
                 ["document/save_as"] = SaveHandlers.SaveAs,
                 ["document/close"] = CloseHandlers.CloseDocument,
-                ["application/exit"] = CloseHandlers.ExitApplication
+                ["application/exit"] = CloseHandlers.ExitApplication,
+                ["document/open"] = OpenFileHandlers.OpenFile,
+                ["document/append"] = OpenFileHandlers.AppendFile,
+                ["visibility/set"] = VisibilityHandlers.SetVisibility,
+                ["visibility/isolate"] = VisibilityHandlers.Isolate,
+                ["viewpoints/list"] = ViewpointHandlers.ListViewpoints,
+                ["viewpoints/apply"] = ViewpointHandlers.ApplyViewpoint,
+                ["view/set_camera"] = CameraHandlers.SetCamera
             };
 
             _jobRoutes = new Dictionary<string, Func<Dictionary<string, object>, JobManager.Job, Dictionary<string, object>>>(
@@ -77,6 +84,8 @@ namespace NavisCoord
                 ["workflow/rules"] = WorkflowHandlers.Rules,
                 ["document/save"] = SaveHandlers.Save,
                 ["document/save_as"] = SaveHandlers.SaveAs,
+                ["document/open"] = (p, j) => OpenFileHandlers.OpenFile(p, j),
+                ["document/append"] = (p, j) => OpenFileHandlers.AppendFile(p, j),
                 ["clash/export"] = ExportClashes,
                 ["clash/run"] = (p, _) => WriteHandlers.RunTests(p),
                 ["clash/group"] = (p, _) => WriteHandlers.ApplyGroups(p),

@@ -349,7 +349,11 @@ namespace NavisCoord.Tests
             _check(source != null, "se encontró WriteHandlers.cs");
             if (source == null) return;
             var text = System.IO.File.ReadAllText(source);
-            var from = text.IndexOf("private static Dictionary<string, object> Sealed(",
+            // internal, not private: other handler classes (visibility,
+            // viewpoints, the camera, document open/append) seal their own
+            // envelopes through the same validator rather than each
+            // reimplementing it.
+            var from = text.IndexOf("internal static Dictionary<string, object> Sealed(",
                 StringComparison.Ordinal);
             var to = text.IndexOf("public static Dictionary<string, object> ListSets",
                 StringComparison.Ordinal);

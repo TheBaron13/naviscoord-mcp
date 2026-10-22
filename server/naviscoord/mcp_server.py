@@ -2550,6 +2550,198 @@ def navis_select_issue(issue_id: str, expected_document_fingerprint: str = "") -
     )
 
 
+# ------------------------------------------------------------ visibilidad
+
+
+@mcp.tool(annotations=_destructive("Ocultar o mostrar elementos"))
+@_guard
+def navis_set_visibility(
+    path_ids: list[str],
+    hidden: bool = True,
+    expected_document_fingerprint: str = "",
+    dry_run: bool = True,
+) -> dict[str, Any]:
+    """Oculta o muestra elementos concretos, independiente de la coordinación.
+
+    No existe un botón "mostrar todo": un reset general repetiría el error
+    que `navis_reset_appearance` ya corrigió para los colores — borraría
+    también lo que el propio coordinador hubiera ocultado a mano. Para
+    mostrar de nuevo lo que ocultó `navis_isolate`, pásale los mismos
+    `path_ids` que esa llamada devolvió en `hidden_path_ids`.
+    """
+    fingerprint = STATE.require_mutable(expected_document_fingerprint)
+    payload = STATE.bridge.set_visibility(
+        path_ids, hidden, expected_fingerprint=fingerprint, dry_run=dry_run
+    )
+    payload.setdefault("document_fingerprint_before", fingerprint)
+    return payload
+
+
+@mcp.tool(annotations=_destructive("Aislar elementos"))
+@_guard
+def navis_isolate(
+    path_ids: list[str],
+    expected_document_fingerprint: str = "",
+    dry_run: bool = True,
+) -> dict[str, Any]:
+    """Oculta todo salvo los elementos indicados (y sus ancestros/descendientes).
+
+    Navisworks no tiene un comando de aislar: esto oculta cada hermano de la
+    cadena de ancestros de lo que debe sobrevivir, que es lo que haría una
+    persona a mano. La respuesta trae `hidden_path_ids` — pásaselos a
+    `navis_set_visibility` con `hidden=False` para deshacer exactamente este
+    aislamiento, sin tocar nada que el coordinador hubiera ocultado antes.
+    """
+    fingerprint = STATE.require_mutable(expected_document_fingerprint)
+    payload = STATE.bridge.isolate(path_ids, expected_fingerprint=fingerprint, dry_run=dry_run)
+    payload.setdefault("document_fingerprint_before", fingerprint)
+    return payload
+
+
+# ------------------------------------------------------------- viewpoints
+
+
+@mcp.tool(annotations=_read_only("Listar puntos de vista guardados"))
+@_guard
+def navis_list_viewpoints() -> dict[str, Any]:
+    """Lista los puntos de vista guardados en el documento, con su carpeta y guid.
+
+    Complementa a `navis_save_viewpoints`, que solo escribe. Usa el `guid`
+    de aquí con `navis_apply_viewpoint` — un nombre puede repetirse en más
+    de una carpeta, un guid no.
+    """
+    return STATE.bridge.list_viewpoints()
+
+
+@mcp.tool(annotations=_additive("Aplicar un punto de vista guardado", idempotent=True))
+@_guard
+def navis_apply_viewpoint(
+    guid: str = "",
+    name: str = "",
+    expected_document_fingerprint: str = "",
+    dry_run: bool = True,
+) -> dict[str, Any]:
+    """Mueve la cámara a un punto de vista guardado, por guid o por nombre.
+
+    Prefiere 'guid' (de `navis_list_viewpoints`): un nombre que exista en más
+    de una carpeta se rechaza en vez de aplicar el primero en silencio.
+    """
+    fingerprint = STATE.require_mutable(expected_document_fingerprint)
+    payload = STATE.bridge.apply_viewpoint(
+        guid=guid, name=name, expected_fingerprint=fingerprint, dry_run=dry_run
+    )
+    payload.setdefault("document_fingerprint_before", fingerprint)
+    return payload
+
+
+# ----------------------------------------------------------------- cámara
+
+
+@mcp.tool(annotations=_additive("Posicionar la cámara", idempotent=True))
+@_guard
+def navis_set_camera(
+    position: list[float],
+    look_at: list[float],
+    up: list[float] | None = None,
+    projection: str = "perspective",
+    render_style: str = "",
+    expected_document_fingerprint: str = "",
+    dry_run: bool = True,
+) -> dict[str, Any]:
+    """Coloca la cámara en una posición y orientación exactas.
+
+    `position` y `look_at` son `[x, y, z]` en las unidades del documento.
+    `up` es opcional — sin él, usa el "arriba" propio del documento en vez de
+    asumir +Z, que inclinaría la imagen en un documento con eje Y como
+    vertical. `projection`: 'perspective' (por defecto) u 'orthographic'.
+    `render_style` acepta los nombres de `ViewpointRenderStyle` de Navisworks
+    (p. ej. 'Shaded', 'Wireframe', 'FullRender'); se deja sin tocar si no se
+    indica.
+
+    Mover la cámara marca el documento como modificado aunque no se guarde
+    nada — Navisworks no tiene cámara fuera de pantalla, así que generar
+    cualquier vista exige mover la que hay. La respuesta lo declara en
+    `document_marked_modified`.
+    """
+    fingerprint = STATE.require_mutable(expected_document_fingerprint)
+    payload = STATE.bridge.set_camera(
+        position,
+        look_at,
+        up=up,
+        projection=projection,
+        render_style=render_style,
+        expected_fingerprint=fingerprint,
+        dry_run=dry_run,
+    )
+    payload.setdefault("document_fingerprint_before", fingerprint)
+    return payload
+
+
+# -------------------------------------------------------- abrir / anexar
+
+
+@mcp.tool(annotations=_destructive("Abrir un archivo de Navisworks"))
+@_guard
+def navis_open_file(
+    path: str,
+    disposition: str = "",
+    expected_document_fingerprint: str = "",
+    dry_run: bool = True,
+    run_async: bool = False,
+) -> dict[str, Any]:
+    """Abre un archivo, reemplazando lo que esté cargado.
+
+    Hasta ahora todo este servidor asumía que alguien ya había abierto algo
+    en Navisworks a mano; esta es la herramienta que faltaba para ese primer
+    paso. Si hay un documento cargado, `expected_document_fingerprint` es
+    obligatorio (léelo de `navis_health`) y, si tiene cambios sin guardar,
+    también `disposition`: 'save', 'discard' o 'require_clean' — igual que
+    `navis_close_document`, no hay una decisión implícita. Sin ningún
+    documento cargado, ninguno de los dos hace falta.
+    """
+    payload = STATE.bridge.open_file(
+        path,
+        disposition=disposition,
+        expected_fingerprint=expected_document_fingerprint,
+        dry_run=dry_run,
+        run_async=run_async,
+    )
+    if not dry_run and payload.get("status") == "completed":
+        STATE.forget_derived()
+    return payload
+
+
+@mcp.tool(annotations=_destructive("Anexar un archivo al documento abierto"))
+@_guard
+def navis_append_file(
+    path: str,
+    expected_document_fingerprint: str = "",
+    dry_run: bool = True,
+    idempotency_key: str = "",
+    run_async: bool = False,
+) -> dict[str, Any]:
+    """Anexa un modelo al documento abierto, sumándolo a la federación.
+
+    A diferencia de abrir, esto exige un documento ya cargado y no lo
+    reemplaza: añade sus modelos a los que ya están. Usa `idempotency_key`
+    si hay riesgo de reintento — a diferencia de la mayoría de las
+    mutaciones de este complemento, anexar dos veces por una reintento dejaría
+    el modelo duplicado en la federación, no un no-op inocuo.
+    """
+    fingerprint = STATE.require_mutable(expected_document_fingerprint)
+    payload = STATE.bridge.append_file(
+        path,
+        expected_fingerprint=fingerprint,
+        dry_run=dry_run,
+        idempotency_key=idempotency_key,
+        run_async=run_async,
+    )
+    payload.setdefault("document_fingerprint_before", fingerprint)
+    if not dry_run and payload.get("status") == "completed":
+        STATE.forget_derived()
+    return payload
+
+
 # ------------------------------------------------------------- ecosystem
 
 

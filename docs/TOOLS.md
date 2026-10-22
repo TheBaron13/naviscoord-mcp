@@ -1,6 +1,6 @@
 # NavisCoord tool reference
 
-53 tools generated from the registered server. Names and input schemas are authoritative.
+60 tools generated from the registered server. Names and input schemas are authoritative.
 
 Document mutations check the intended document fingerprint. Where a tool exposes `dry_run`, inspect the preview before execution.
 
@@ -77,6 +77,52 @@ une al trabajo en curso en vez de encolar otra extracción completa.
     }
   },
   "title": "navis_analyzeArguments",
+  "type": "object"
+}
+```
+
+## `navis_append_file`
+
+Anexa un modelo al documento abierto, sumándolo a la federación.
+
+A diferencia de abrir, esto exige un documento ya cargado y no lo
+reemplaza: añade sus modelos a los que ya están. Usa `idempotency_key`
+si hay riesgo de reintento — a diferencia de la mayoría de las
+mutaciones de este complemento, anexar dos veces por una reintento dejaría
+el modelo duplicado en la federación, no un no-op inocuo.
+
+```json
+{
+  "properties": {
+    "path": {
+      "title": "Path",
+      "type": "string"
+    },
+    "expected_document_fingerprint": {
+      "default": "",
+      "title": "Expected Document Fingerprint",
+      "type": "string"
+    },
+    "dry_run": {
+      "default": true,
+      "title": "Dry Run",
+      "type": "boolean"
+    },
+    "idempotency_key": {
+      "default": "",
+      "title": "Idempotency Key",
+      "type": "string"
+    },
+    "run_async": {
+      "default": false,
+      "title": "Run Async",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "path"
+  ],
+  "title": "navis_append_fileArguments",
   "type": "object"
 }
 ```
@@ -189,6 +235,42 @@ devuelva el resultado original sin volver a tocar el documento.
     }
   },
   "title": "navis_apply_groupsArguments",
+  "type": "object"
+}
+```
+
+## `navis_apply_viewpoint`
+
+Mueve la cámara a un punto de vista guardado, por guid o por nombre.
+
+Prefiere 'guid' (de `navis_list_viewpoints`): un nombre que exista en más
+de una carpeta se rechaza en vez de aplicar el primero en silencio.
+
+```json
+{
+  "properties": {
+    "guid": {
+      "default": "",
+      "title": "Guid",
+      "type": "string"
+    },
+    "name": {
+      "default": "",
+      "title": "Name",
+      "type": "string"
+    },
+    "expected_document_fingerprint": {
+      "default": "",
+      "title": "Expected Document Fingerprint",
+      "type": "string"
+    },
+    "dry_run": {
+      "default": true,
+      "title": "Dry Run",
+      "type": "boolean"
+    }
+  },
+  "title": "navis_apply_viewpointArguments",
   "type": "object"
 }
 ```
@@ -1079,6 +1161,45 @@ al argumento que lo causó.
 }
 ```
 
+## `navis_isolate`
+
+Oculta todo salvo los elementos indicados (y sus ancestros/descendientes).
+
+Navisworks no tiene un comando de aislar: esto oculta cada hermano de la
+cadena de ancestros de lo que debe sobrevivir, que es lo que haría una
+persona a mano. La respuesta trae `hidden_path_ids` — pásaselos a
+`navis_set_visibility` con `hidden=False` para deshacer exactamente este
+aislamiento, sin tocar nada que el coordinador hubiera ocultado antes.
+
+```json
+{
+  "properties": {
+    "path_ids": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Path Ids",
+      "type": "array"
+    },
+    "expected_document_fingerprint": {
+      "default": "",
+      "title": "Expected Document Fingerprint",
+      "type": "string"
+    },
+    "dry_run": {
+      "default": true,
+      "title": "Dry Run",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "path_ids"
+  ],
+  "title": "navis_isolateArguments",
+  "type": "object"
+}
+```
+
 ## `navis_issue_detail`
 
 Detalle completo de un problema: elementos, propiedades, por qué puntúa así.
@@ -1170,6 +1291,22 @@ Lista los tests de clash del documento con su estado y conteo.
 }
 ```
 
+## `navis_list_viewpoints`
+
+Lista los puntos de vista guardados en el documento, con su carpeta y guid.
+
+Complementa a `navis_save_viewpoints`, que solo escribe. Usa el `guid`
+de aquí con `navis_apply_viewpoint` — un nombre puede repetirse en más
+de una carpeta, un guid no.
+
+```json
+{
+  "properties": {},
+  "title": "navis_list_viewpointsArguments",
+  "type": "object"
+}
+```
+
 ## `navis_load_profile`
 
 Carga un perfil de proyecto (pesos, tolerancias, reglas de disciplina).
@@ -1237,6 +1374,54 @@ coordinarse punto por punto.
 {
   "properties": {},
   "title": "navis_narrative_reportArguments",
+  "type": "object"
+}
+```
+
+## `navis_open_file`
+
+Abre un archivo, reemplazando lo que esté cargado.
+
+Hasta ahora todo este servidor asumía que alguien ya había abierto algo
+en Navisworks a mano; esta es la herramienta que faltaba para ese primer
+paso. Si hay un documento cargado, `expected_document_fingerprint` es
+obligatorio (léelo de `navis_health`) y, si tiene cambios sin guardar,
+también `disposition`: 'save', 'discard' o 'require_clean' — igual que
+`navis_close_document`, no hay una decisión implícita. Sin ningún
+documento cargado, ninguno de los dos hace falta.
+
+```json
+{
+  "properties": {
+    "path": {
+      "title": "Path",
+      "type": "string"
+    },
+    "disposition": {
+      "default": "",
+      "title": "Disposition",
+      "type": "string"
+    },
+    "expected_document_fingerprint": {
+      "default": "",
+      "title": "Expected Document Fingerprint",
+      "type": "string"
+    },
+    "dry_run": {
+      "default": true,
+      "title": "Dry Run",
+      "type": "boolean"
+    },
+    "run_async": {
+      "default": false,
+      "title": "Run Async",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "path"
+  ],
+  "title": "navis_open_fileArguments",
   "type": "object"
 }
 ```
@@ -1972,6 +2157,85 @@ sesión: aquí se ven todas, con cuál está seleccionada.
 }
 ```
 
+## `navis_set_camera`
+
+Coloca la cámara en una posición y orientación exactas.
+
+`position` y `look_at` son `[x, y, z]` en las unidades del documento.
+`up` es opcional — sin él, usa el "arriba" propio del documento en vez de
+asumir +Z, que inclinaría la imagen en un documento con eje Y como
+vertical. `projection`: 'perspective' (por defecto) u 'orthographic'.
+`render_style` acepta los nombres de `ViewpointRenderStyle` de Navisworks
+(p. ej. 'Shaded', 'Wireframe', 'FullRender'); se deja sin tocar si no se
+indica.
+
+Mover la cámara marca el documento como modificado aunque no se guarde
+nada — Navisworks no tiene cámara fuera de pantalla, así que generar
+cualquier vista exige mover la que hay. La respuesta lo declara en
+`document_marked_modified`.
+
+```json
+{
+  "properties": {
+    "position": {
+      "items": {
+        "type": "number"
+      },
+      "title": "Position",
+      "type": "array"
+    },
+    "look_at": {
+      "items": {
+        "type": "number"
+      },
+      "title": "Look At",
+      "type": "array"
+    },
+    "up": {
+      "anyOf": [
+        {
+          "items": {
+            "type": "number"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Up"
+    },
+    "projection": {
+      "default": "perspective",
+      "title": "Projection",
+      "type": "string"
+    },
+    "render_style": {
+      "default": "",
+      "title": "Render Style",
+      "type": "string"
+    },
+    "expected_document_fingerprint": {
+      "default": "",
+      "title": "Expected Document Fingerprint",
+      "type": "string"
+    },
+    "dry_run": {
+      "default": true,
+      "title": "Dry Run",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "position",
+    "look_at"
+  ],
+  "title": "navis_set_cameraArguments",
+  "type": "object"
+}
+```
+
 ## `navis_set_disciplines`
 
 Fija el mapeo archivo → disciplina, sobrescribiendo la heurística.
@@ -2036,6 +2300,50 @@ Marca los cruces de esos problemas con un estado (New/Active/Reviewed/Approved/R
     "issue_ids"
   ],
   "title": "navis_set_statusArguments",
+  "type": "object"
+}
+```
+
+## `navis_set_visibility`
+
+Oculta o muestra elementos concretos, independiente de la coordinación.
+
+No existe un botón "mostrar todo": un reset general repetiría el error
+que `navis_reset_appearance` ya corrigió para los colores — borraría
+también lo que el propio coordinador hubiera ocultado a mano. Para
+mostrar de nuevo lo que ocultó `navis_isolate`, pásale los mismos
+`path_ids` que esa llamada devolvió en `hidden_path_ids`.
+
+```json
+{
+  "properties": {
+    "path_ids": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Path Ids",
+      "type": "array"
+    },
+    "hidden": {
+      "default": true,
+      "title": "Hidden",
+      "type": "boolean"
+    },
+    "expected_document_fingerprint": {
+      "default": "",
+      "title": "Expected Document Fingerprint",
+      "type": "string"
+    },
+    "dry_run": {
+      "default": true,
+      "title": "Dry Run",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "path_ids"
+  ],
+  "title": "navis_set_visibilityArguments",
   "type": "object"
 }
 ```
