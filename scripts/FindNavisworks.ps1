@@ -20,7 +20,7 @@
     Un directorio sin el API no sirve para compilar y se descarta con nombre.
 
     El mapeo interno-comercial es el de Autodesk: Navisworks 2024 = v21,
-    2025 = v22, 2026 = v23.
+    2025 = v22, 2026 = v23, 2027 = v24.
 
 .PARAMETER SelfTest
     Ejercita el parser y el orden de autoridad con un arbol temporal propio,
@@ -34,6 +34,7 @@ $script:NavisInternalVersions = @{
     '2024' = '21.0'
     '2025' = '22.0'
     '2026' = '23.0'
+    '2027' = '24.0'
 }
 
 function Test-NavisProductDir {
@@ -116,7 +117,7 @@ function Find-NavisworksInstall {
 }
 
 function Find-AllNavisworks {
-    param([string[]]$Versions = @('2024', '2025', '2026'))
+    param([string[]]$Versions = @('2024', '2025', '2026', '2027'))
 
     $found = @()
     foreach ($v in $Versions) {
@@ -153,10 +154,11 @@ if ($SelfTest) {
         Check 'una ruta vacia se descarta sin explotar' (-not (Test-NavisProductDir -Dir ''))
         Check 'una ruta inexistente se descarta' (-not (Test-NavisProductDir -Dir (Join-Path $sandbox 'NoExiste')))
 
-        Check 'el mapeo comercial-interno cubre 2024-2026' `
+        Check 'el mapeo comercial-interno cubre 2024-2027' `
             ($script:NavisInternalVersions['2024'] -eq '21.0' -and
              $script:NavisInternalVersions['2025'] -eq '22.0' -and
-             $script:NavisInternalVersions['2026'] -eq '23.0')
+             $script:NavisInternalVersions['2026'] -eq '23.0' -and
+             $script:NavisInternalVersions['2027'] -eq '24.0')
         Check 'una version desconocida no consulta el registro' `
             ((Get-NavisFromRegistry -Version '1999').Count -eq 0)
 

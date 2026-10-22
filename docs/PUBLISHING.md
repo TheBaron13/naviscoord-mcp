@@ -58,7 +58,7 @@ Submitted runtime source: `0a10f4fc5f0fd3398800f6dfd6d32d415ddeaddc`. MCPB SHA25
 
 **Tagline:** Turn Navisworks clashes into coordination decisions.
 
-**Description:** NavisCoord connects a desktop AI client to Autodesk Navisworks Manage on the same Windows computer. It exposes 53 MCP tools for model discovery, clash tests, evidence-aware analysis, coordination groups, revision comparisons and reports. Document writes check their target and report verification outcomes. The standalone runtime includes its dependencies. Live use requires licensed Navisworks Manage 2024, 2025 or 2026. Requested tool outputs can include model properties, coordinates and images sent to the user's AI client.
+**Description:** NavisCoord connects a desktop AI client to Autodesk Navisworks Manage on the same Windows computer. It exposes 53 MCP tools for model discovery, clash tests, evidence-aware analysis, coordination groups, revision comparisons and reports. Document writes check their target and report verification outcomes. The standalone runtime includes its dependencies. Live use requires licensed Navisworks Manage 2024, 2025, 2026 or 2027. Requested tool outputs can include model properties, coordinates and images sent to the user's AI client.
 
 **Repository:** https://github.com/HorizunGroup/naviscoord-mcp
 

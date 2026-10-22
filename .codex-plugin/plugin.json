@@ -32,7 +32,7 @@
   "interface": {
     "displayName": "NavisCoord",
     "shortDescription": "Coordina modelos de Navisworks con criterio de obra",
-    "longDescription": "Conecta Codex con Autodesk Navisworks Manage 2024-2026 y convierte una corrida de clash detection en decisiones priorizadas y explicadas: filtra lo que no es interferencia, agrupa los cruces redundantes, detecta causas raíz sistémicas, arma la matriz de coordinación y un plan por paquetes, y genera el informe y el PDF con imágenes de cada cruce.",
+    "longDescription": "Conecta Codex con Autodesk Navisworks Manage 2024-2027 y convierte una corrida de clash detection en decisiones priorizadas y explicadas: filtra lo que no es interferencia, agrupa los cruces redundantes, detecta causas raíz sistémicas, arma la matriz de coordinación y un plan por paquetes, y genera el informe y el PDF con imágenes de cada cruce.",
     "developerName": "HorizunGroup",
     "category": "Developer Tools",
     "capabilities": [

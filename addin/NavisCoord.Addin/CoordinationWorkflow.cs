@@ -462,7 +462,7 @@ namespace NavisCoord
                 .Where(n => foldersWanted.Contains(n))
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .Count();
-            var testsPresent = doc.GetClash().TestsData.Tests.Count;
+            var testsPresent = doc.GetClash().TestsData.Value.TestsRoot.Children.Count;
 
             // Sets and tests, the same units as Requested and Applied. It used
             // to add FOLDERS here, so a fully applied profile read «6
@@ -478,7 +478,7 @@ namespace NavisCoord
             // removed — that is a person's call — but named, so «6 tests in
             // the document» is not read as six tests of this configuration.
             var wantedTests = new HashSet<string>(ConfigurePlanning.MatrixTestNames(profile), StringComparer.OrdinalIgnoreCase);
-            result.Detail["tests_not_in_profile"] = doc.GetClash().TestsData.Tests
+            result.Detail["tests_not_in_profile"] = doc.GetClash().TestsData.Value.TestsRoot.Children
                 .Select(t => t.DisplayName ?? string.Empty)
                 .Where(n => !wantedTests.Contains(n))
                 .Cast<object>().ToList();
@@ -625,7 +625,7 @@ namespace NavisCoord
                 Enum.TryParse<ClashTestType>(typeName, true, out var expectedType);
                 var expectedTolerance = toleranceM / (scale == 0 ? 1 : scale);
 
-                var duplicate = clash.TestsData.Tests
+                var duplicate = clash.TestsData.Value.TestsRoot.Children
                     .OfType<ClashTest>()
                     .FirstOrDefault(t => string.Equals(t.DisplayName, name, StringComparison.OrdinalIgnoreCase));
                 if (duplicate != null)
@@ -681,7 +681,7 @@ namespace NavisCoord
                         continue;
                     }
 
-                    clash.TestsData.TestsRemove(duplicate);
+                    clash.TestsData.TestsRemove(duplicate.Parent, duplicate);
                 }
 
                 var sourcesA = BuildSideSources(doc, a, Json.StrArr(spec, "a_sets"));
@@ -708,7 +708,7 @@ namespace NavisCoord
                 };
                 test.SelectionA.Selection.CopyFrom(sourcesA);
                 test.SelectionB.Selection.CopyFrom(sourcesB);
-                clash.TestsData.TestsAddCopy(test);
+                clash.TestsData.TestsAddCopy(clash.TestsData.Value.TestsRoot, test);
                 created++;
             }
 
@@ -725,7 +725,7 @@ namespace NavisCoord
             var observed = new List<ConfigurePlanning.ObservedTest>();
             foreach (var name in wanted)
             {
-                var live = doc.GetClash().TestsData.Tests
+                var live = doc.GetClash().TestsData.Value.TestsRoot.Children
                     .OfType<ClashTest>()
                     .FirstOrDefault(t => string.Equals(t.DisplayName, name, StringComparison.OrdinalIgnoreCase));
                 var entry = new ConfigurePlanning.ObservedTest
@@ -767,7 +767,7 @@ namespace NavisCoord
                 ["skipped"] = skipped,
                 ["outdated"] = outdated,
                 ["orphaned"] = orphaned,
-                ["tests_in_document"] = (double)clash.TestsData.Tests.Count,
+                ["tests_in_document"] = (double)clash.TestsData.Value.TestsRoot.Children.Count,
                 ["verified_tests"] = (double)verified,
                 ["failed_tests"] = (double)verdict.Failed,
                 ["verification"] = verdict.Details.Cast<object>().ToList(),
@@ -923,7 +923,7 @@ namespace NavisCoord
         private static List<RunVerification.TestState> SnapshotForRun(Document doc)
         {
             var states = new List<RunVerification.TestState>();
-            foreach (var saved in doc.GetClash().TestsData.Tests)
+            foreach (var saved in doc.GetClash().TestsData.Value.TestsRoot.Children)
             {
                 if (!(saved is ClashTest test)) continue;
                 states.Add(new RunVerification.TestState
@@ -957,7 +957,7 @@ namespace NavisCoord
                 VerificationSource = VerificationSources.GroupMembershipReread
             };
 
-            var testNames = clash.TestsData.Tests
+            var testNames = clash.TestsData.Value.TestsRoot.Children
                 .OfType<ClashTest>()
                 .Select(t => t.DisplayName ?? string.Empty)
                 .Where(n => !string.IsNullOrWhiteSpace(n))
@@ -1066,7 +1066,7 @@ namespace NavisCoord
         }
 
         private static ClashTest FindTest(DocumentClash clash, string name)
-            => clash.TestsData.Tests
+            => clash.TestsData.Value.TestsRoot.Children
                 .OfType<ClashTest>()
                 .FirstOrDefault(t => string.Equals(t.DisplayName, name, StringComparison.OrdinalIgnoreCase));
 
@@ -1189,7 +1189,7 @@ namespace NavisCoord
             if (scale == 0) scale = 1;
 
             var occurrences = new List<RepeatSeries.Occurrence>();
-            foreach (var test in doc.GetClash().TestsData.Tests.OfType<ClashTest>())
+            foreach (var test in doc.GetClash().TestsData.Value.TestsRoot.Children.OfType<ClashTest>())
             {
                 var results = new List<ClashResult>();
                 Collect(test, results);

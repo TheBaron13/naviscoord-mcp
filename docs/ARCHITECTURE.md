@@ -71,7 +71,7 @@ Ver [SESSIONS.md](SESSIONS.md).
 ### Add-in — `addin/NavisCoord.Addin/`
 
 .NET Framework 4.8 dentro del proceso de Navisworks. Compila contra el API de
-cada versión (2024=v21, 2025=v22, 2026=v23) por separado.
+cada versión (2024=v21, 2025=v22, 2026=v23, 2027=v24) por separado.
 
 | Archivo | Responsabilidad |
 |---|---|

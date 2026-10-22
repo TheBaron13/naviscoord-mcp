@@ -1,11 +1,18 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <!--
-    Navisworks Manage 2024-2026 all host .NET Framework 4.8, not .NET 8.
+    Navisworks Manage 2024-2027 all host .NET Framework 4.8, not .NET 8.
     Verified against the shipped binaries: Autodesk.Navisworks.Api.dll is
-    v21 (2024) through v23 (2026), every one with TFM
-    .NETFramework,Version=v4.8. Targeting anything else produces a DLL
+    v21 (2024) through v24 (2027), every one with TFM
+    .NETFramework,Version=v4.8 (2027 confirmed 2026-10-13 against the real
+    24.0.1453.24 assembly). Targeting anything else produces a DLL
     Navisworks silently refuses to load.
+
+    v24 (2027) also removed DocumentClashTests.Tests and the single-argument
+    overloads of TestsAddCopy/TestsRemove — confirmed by compiling this
+    project against the real 2027 SDK. The fix (TestsData.Value.TestsRoot,
+    and the two-argument method forms) uses only members present since v21,
+    so one source still serves every supported version; see CHANGELOG.md.
 
     Built once per installed version by install.ps1 (NavisworksDir env var
     selects which API to compile against), because each release ships its own

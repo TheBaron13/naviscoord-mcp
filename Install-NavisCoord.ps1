@@ -3,7 +3,7 @@
     Installs the latest published NavisCoord add-in without build tools.
 
 .DESCRIPTION
-    Beginner-facing installer for Autodesk Navisworks Manage 2024-2026.
+    Beginner-facing installer for Autodesk Navisworks Manage 2024-2027.
     It discovers installed versions, downloads the matching ZIPs from the
     official GitHub release, verifies SHA256SUMS.txt, validates the archive
     shape and publishes only NavisCoord-owned files with rollback.
@@ -20,7 +20,7 @@
 [CmdletBinding(SupportsShouldProcess = $true, DefaultParameterSetName = 'Install')]
 param(
     [Parameter(ParameterSetName = 'Install')]
-    [ValidateSet('2024', '2025', '2026', 'all')]
+    [ValidateSet('2024', '2025', '2026', '2027', 'all')]
     [string]$Version = 'all',
 
     [Parameter(ParameterSetName = 'Install')]
@@ -65,7 +65,7 @@ function Assert-NavisworksClosed {
 function Get-InstalledVersions {
     param([string]$Wanted)
 
-    $candidates = if ($Wanted -eq 'all') { @('2024', '2025', '2026') } else { @($Wanted) }
+    $candidates = if ($Wanted -eq 'all') { @('2024', '2025', '2026', '2027') } else { @($Wanted) }
     $found = @()
     foreach ($v in $candidates) {
         $paths = @()
@@ -81,7 +81,7 @@ function Get-InstalledVersions {
     }
 
     if ($found.Count -eq 0) {
-        $which = if ($Wanted -eq 'all') { '2024, 2025 o 2026' } else { $Wanted }
+        $which = if ($Wanted -eq 'all') { '2024, 2025, 2026 o 2027' } else { $Wanted }
         throw "No encontré Autodesk Navisworks Manage $which. Freedom no carga este complemento."
     }
     return $found

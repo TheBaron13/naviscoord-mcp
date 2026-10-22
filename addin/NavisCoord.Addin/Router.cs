@@ -222,7 +222,7 @@ namespace NavisCoord
                 var testCount = 0;
                 try
                 {
-                    var tests = doc.GetClash().TestsData.Tests;
+                    var tests = doc.GetClash().TestsData.Value.TestsRoot.Children;
                     testCount = tests.Count;
                     foreach (var saved in tests)
                     {
@@ -321,7 +321,7 @@ namespace NavisCoord
             var doc = RequireDocument();
             var tests = new List<object>();
 
-            foreach (var saved in doc.GetClash().TestsData.Tests)
+            foreach (var saved in doc.GetClash().TestsData.Value.TestsRoot.Children)
             {
                 if (!(saved is ClashTest test)) continue;
                 tests.Add(new Dictionary<string, object>
@@ -402,7 +402,7 @@ namespace NavisCoord
             var total = 0;
             if (job != null)
             {
-                foreach (var saved in doc.GetClash().TestsData.Tests)
+                foreach (var saved in doc.GetClash().TestsData.Value.TestsRoot.Children)
                 {
                     if (saved is ClashTest counted &&
                         (testFilter.Count == 0 || testFilter.Contains(counted.DisplayName ?? string.Empty)))
@@ -414,7 +414,7 @@ namespace NavisCoord
                 job.Progress("exportando cruces", 0, Math.Max(total, 1));
             }
 
-            foreach (var saved in doc.GetClash().TestsData.Tests)
+            foreach (var saved in doc.GetClash().TestsData.Value.TestsRoot.Children)
             {
                 if (!(saved is ClashTest test)) continue;
                 var testName = test.DisplayName ?? string.Empty;

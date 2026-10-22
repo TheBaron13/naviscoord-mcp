@@ -50,7 +50,7 @@ nombre de tipo o de familia mínimo que lo reproduzca es suficiente.
   ellas es criterio de obra.
 - **Perfiles corporativos.** El esquema y la validación son públicos; el
   contenido de un perfil de empresa es de esa empresa.
-- **Versiones de Navisworks fuera de 2024–2026.**
+- **Versiones de Navisworks fuera de 2024–2027.**
 
 ## Tiempos
 
