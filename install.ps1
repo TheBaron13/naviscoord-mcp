@@ -37,8 +37,64 @@ $ErrorActionPreference = "Stop"
 $supported = if ($Version -eq 'all') { @('2024','2025','2026','2027') } else { @($Version) }
 $projectDir = Join-Path $PSScriptRoot "addin\NavisCoord.Addin"
 
+# 2027 no carga nada desde la carpeta Plugins heredada (ni la nuestra ni la de
+# Autodesk: confirmado el 2026-10-22 contra una instalación real, comparando
+# contra BCF_Manager.KUBU, que tampoco carga ahí). Las versiones de este
+# arreglo usan en vez el paquete ApplicationPlugins (PackageContents.xml); el
+# resto se queda en la carpeta heredada, que sigue funcionando.
+$bundleVersions = @('2027')
+
+# API interna de Navisworks: 2024=v21 ... 2027=v24 (ver el comentario del
+# csproj). El mismo número nombra la subcarpeta Contents\v<N> del paquete y la
+# serie "Nw<N>" que exige RuntimeRequirements — confirmado leyendo
+# 3DxNavisworks.bundle en esta máquina, que declara exactamente esa
+# correspondencia para siete años reales (2020=Nw17 ... 2026=Nw23).
+$script:ApiVersionByYear = @{ '2024' = 21; '2025' = 22; '2026' = 23; '2027' = 24 }
+
 function Get-PluginDir([string]$v) {
     Join-Path $env:APPDATA "Autodesk\Navisworks Manage $v\Plugins\NavisCoord"
+}
+
+function Get-BundleDir {
+    Join-Path $env:APPDATA "Autodesk\ApplicationPlugins\HRZN.NavisCoord.bundle"
+}
+
+# ProductCode/UpgradeCode son fijos: un GUID nuevo en cada build invalidaría
+# cualquier futuro instalador MSI que los use para detectar una instalación
+# previa. Generados una vez (2026-10-22) y fijados aquí.
+$script:BundleProductCode = '{f3b8b94f-fa5a-4ed8-ab2e-4acc6cb6dbb6}'
+$script:BundleUpgradeCode = '{901eb49d-1d6e-485b-9a9f-bded94c5bd13}'
+
+function New-PackageContentsXml {
+    param([int]$ApiVersion, [string]$PluginVersion)
+
+    # AppNameSpace="appstore.exchange.autodesk.com": no es un namespace propio
+    # de HorizunGroup, es el valor fijo que trae la plantilla de Autodesk —
+    # visto igual en el bundle de Autodesk (NavisworksBIM360Issues) y en el de
+    # un tercero (ExportNavisworks) en esta misma máquina.
+    @"
+<?xml version="1.0" encoding="utf-8"?>
+<ApplicationPackage SchemaVersion="1.0"
+                    AutodeskProduct="Navisworks"
+                    Name="NavisCoord"
+                    Description="Puente de coordinacion para el servidor MCP NavisCoord"
+                    AppVersion="$PluginVersion"
+                    FriendlyVersion="$PluginVersion"
+                    ProductType="Application"
+                    SupportedLocales="Enu"
+                    AppNameSpace="appstore.exchange.autodesk.com"
+                    Author="HorizunGroup"
+                    ProductCode="$script:BundleProductCode"
+                    UpgradeCode="$script:BundleUpgradeCode"
+                    HelpFile=""
+                    Icon="./Contents/v$ApiVersion/nc_32.png">
+  <CompanyDetails Name="HorizunGroup" Url="https://github.com/HorizunGroup/naviscoord-mcp" Email="" Phone="" />
+  <Components Description="NW$($ApiVersion + 2003) parts">
+    <RuntimeRequirements OS="Win64" Platform="NAVMAN|NAVSIM" SeriesMin="Nw$ApiVersion" SeriesMax="Nw$ApiVersion" />
+    <ComponentEntry AppType="ManagedPlugin" Version="$PluginVersion" ModuleName="./Contents/v$ApiVersion/NavisCoord.dll" />
+  </Components>
+</ApplicationPackage>
+"@
 }
 
 function Get-NavisworksProductDir([string]$v) {
@@ -102,6 +158,16 @@ if (Get-Process -Name "Roamer" -ErrorAction SilentlyContinue) {
 # mover o desinstalar Navisworks.
 if ($Uninstall) {
     foreach ($v in $supported) {
+        if ($v -in $bundleVersions) {
+            $bundleDir = Get-BundleDir
+            if (Test-Path -LiteralPath $bundleDir) {
+                Remove-Item -LiteralPath $bundleDir -Recurse -Force
+                Write-Host "[$v] complemento eliminado (bundle)"
+            } else {
+                Write-Host "[$v] no había nada instalado (bundle)"
+            }
+            continue
+        }
         $pluginDir = Get-PluginDir $v
         if (Test-Path -LiteralPath $pluginDir) {
             Remove-Item -LiteralPath $pluginDir -Recurse -Force
@@ -181,6 +247,49 @@ foreach ($f in $found) {
     # botones en blanco.
     $icons = Get-ChildItem $outDir -Filter "nc*.png" -File
     if (-not $icons) { throw "[$v] el build no dejó los iconos (nc*.png) en $outDir" }
+
+    if ($v -in $bundleVersions) {
+        # Paquete ApplicationPlugins: Contents\v<N>\, no Plugins\NavisCoord\.
+        # La carpeta heredada de una instalación anterior (que sabemos que
+        # Navisworks no carga en esta versión) se borra en vez de dejarla:
+        # convivir ahí solo confunde a quien busque qué está instalado de
+        # verdad.
+        $apiVersion = $script:ApiVersionByYear[$v]
+        $staleLegacyDir = Get-PluginDir $v
+        if (Test-Path -LiteralPath $staleLegacyDir) {
+            Remove-Item -LiteralPath $staleLegacyDir -Recurse -Force
+        }
+
+        $bundleDir = Get-BundleDir
+        $contentsDir = Join-Path $bundleDir "Contents\v$apiVersion"
+        $installed = Join-Path $contentsDir "NavisCoord.dll"
+        Install-FileAtomic $built $installed
+
+        New-Item -ItemType Directory -Force -Path (Join-Path $contentsDir "en-US") | Out-Null
+        Copy-Item $layout -Destination $contentsDir -Force
+        Copy-Item $layout -Destination (Join-Path $contentsDir "en-US") -Force
+
+        Get-ChildItem $contentsDir -Filter "nc*.png" -File -ErrorAction SilentlyContinue |
+            Remove-Item -Force
+        Copy-Item $icons.FullName -Destination $contentsDir -Force
+
+        $manifestPath = Join-Path $bundleDir "PackageContents.xml"
+        $pluginVersion = (Get-Item $built).VersionInfo.FileVersion
+        if (-not $pluginVersion) { $pluginVersion = "1.0.0" }
+        Set-Content -LiteralPath $manifestPath -Value (New-PackageContentsXml -ApiVersion $apiVersion -PluginVersion $pluginVersion) -Encoding UTF8 -NoNewline
+
+        if (-not (Test-Path $installed)) { throw "[$v] la copia no dejó el DLL en $installed" }
+        if ((Get-FileHash $built -Algorithm SHA256).Hash -ne (Get-FileHash $installed -Algorithm SHA256).Hash) {
+            throw "[$v] el DLL instalado no coincide en SHA-256 con el compilado."
+        }
+        foreach ($x in @((Join-Path $contentsDir "NavisCoordRibbon.xaml"),
+                         (Join-Path $contentsDir "en-US\NavisCoordRibbon.xaml"),
+                         $manifestPath)) {
+            if (-not (Test-Path $x)) { throw "[$v] falta '$x' tras instalar el bundle" }
+        }
+        Write-Host "[$v] instalado (bundle ApplicationPlugins): $installed (+ cinta + manifiesto)"
+        continue
+    }
 
     $pluginDir = Get-PluginDir $v
     $installed = Join-Path $pluginDir "NavisCoord.dll"

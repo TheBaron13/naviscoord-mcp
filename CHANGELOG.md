@@ -21,6 +21,35 @@ Este proyecto sigue [SemVer](https://semver.org/lang/es/).
   API confirmada en 2025 y 2027, que el proyecto ya trataba como idéntica en
   las tres versiones.
 
+- **2027 no cargaba el complemento (confirmado 2026-10-22, máquina real).**
+  El build de 2027 compilaba e instalaba sin error en
+  `%APPDATA%\...\Navisworks Manage 2027\Plugins\NavisCoord\`, pero nunca se
+  cargaba: sin línea nueva en `bridge.log`, sin entrada en
+  `RibbonUserState.xml`, y `NavisCoord.dll` ausente de los módulos cargados
+  del proceso `Roamer` en vivo. No era un problema del build: un complemento
+  de Autodesk instalado de la misma forma heredada
+  (`Plugins\BCF_Manager.KUBU` bajo Program Files) tampoco cargaba en el mismo
+  proceso, mientras que un complemento empaquetado como `ApplicationPlugins`
+  (`PackageContents.xml`) sí. La instalación de 2025, con el mismo método
+  heredado, seguía funcionando (confirmado por las fechas de `bridge.log`).
+  Ninguna nota de Autodesk dice que 2027 quitó el escaneo de la carpeta
+  `Plugins` heredada; es una conclusión empírica, no documentada.
+
+  `install.ps1` instala 2027 ahora como bundle `ApplicationPlugins`
+  (`%APPDATA%\Autodesk\ApplicationPlugins\HRZN.NavisCoord.bundle\`,
+  `Contents\v24\NavisCoord.dll`), y limpia cualquier instalación heredada
+  previa de esa versión al hacerlo. 2024–2026 se quedan en la carpeta
+  heredada, que sigue funcionando — no probado en vivo si 2026 tiene el mismo
+  problema que 2027 por no haber esa instalación disponible en esta máquina.
+  El mapeo de serie (`Nw<N>` = año − 2003) se confirmó leyendo
+  `3DxNavisworks.bundle` en esta máquina, que lo declara para siete años
+  reales (2020=Nw17 … 2026=Nw23); 2027=Nw24 es la misma progresión, no
+  verificada por Autodesk directamente.
+
+  `Install-NavisCoord.ps1` y `Build-Release.ps1` (la ruta de release/ZIP)
+  todavía instalan 2027 a la carpeta heredada y no se han actualizado — solo
+  `install.ps1` (compilar desde el código) tiene el arreglo por ahora.
+
 ## [1.1.1] — 2026-10-01
 
 - **Los ZIP del complemento traen la cinta.** `Build-Release.ps1` empaquetaba

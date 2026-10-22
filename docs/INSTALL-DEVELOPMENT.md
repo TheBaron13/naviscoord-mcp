@@ -171,5 +171,16 @@ que cargó el código al arrancar. `navis_health` lo reporta en
 
 **El complemento no aparece en Navisworks.** Comprueba que el DLL esté en
 `%APPDATA%\Autodesk\Navisworks Manage <versión>\Plugins\NavisCoord\NavisCoord.dll`
-y revisa `%LOCALAPPDATA%\NavisCoord\bridge.log`: el complemento nunca abre
-diálogos desde el puente, todo lo escribe ahí.
+(2024–2026) o en
+`%APPDATA%\Autodesk\ApplicationPlugins\HRZN.NavisCoord.bundle\Contents\v24\NavisCoord.dll`
+(2027) y revisa `%LOCALAPPDATA%\NavisCoord\bridge.log`: el complemento nunca
+abre diálogos desde el puente, todo lo escribe ahí. Si no hay ninguna línea
+nueva ahí después de abrir Navisworks, el complemento no se cargó — no es un
+error dentro de él.
+
+**2027 no carga nada desde la carpeta `Plugins` heredada** (confirmado
+2026-10-22 contra una instalación real: ni `NavisCoord.dll` ni
+`BCF_Manager.KUBU`, un complemento de Autodesk instalado de la misma forma,
+aparecían entre los módulos cargados del proceso `Roamer`). `install.ps1`
+instala 2027 como paquete `ApplicationPlugins` en vez de la carpeta
+heredada; ver `CHANGELOG.md`.
