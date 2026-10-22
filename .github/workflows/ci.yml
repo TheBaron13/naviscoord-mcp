@@ -129,9 +129,21 @@ jobs:
         run: |
           cd server
           pip install -e ".[dev]"
-          pip install "mcp==1.14.*" "reportlab==4.0.4" "pillow==10.0.*"
+          # pydantic no es una dependencia directa de naviscoord — la trae mcp —
+          # así que el primer install resuelve la MÁS NUEVA que exista hoy, no
+          # el suelo que mcp==1.14 declara (pydantic>=2.11.0,<3.0.0). El 22 de
+          # octubre de 2026 esa más nueva fue 2.14.1, que quitó
+          # pydantic._internal._typing_extra.eval_type_backport — un símbolo
+          # privado del que depende el fastmcp vendorizado en mcp 1.14.x — y
+          # el job rompió con mcp 1.14 + pydantic 2.14 conviviendo, una
+          # combinación que mcp declara soportar (pydantic<3.0.0) pero que en
+          # los hechos nunca compiló contra ella. Fijar pydantic a lo que
+          # mcp==1.14 declara como SU propio suelo es la combinación que este
+          # job dice probar; sin esto, "mínimos declarados" en realidad
+          # probaba mcp mínimo contra un pydantic que sube solo.
+          pip install "mcp==1.14.*" "reportlab==4.0.4" "pillow==10.0.*" "pydantic==2.11.0"
       - name: Versiones resueltas
-        run: pip show mcp reportlab pillow | grep -E "^(Name|Version)"
+        run: pip show mcp pydantic reportlab pillow | grep -E "^(Name|Version)"
       - name: Pruebas
         run: cd server && python -m pytest tests -q
 
